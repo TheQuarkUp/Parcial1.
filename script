@@ -1,0 +1,153 @@
+# Datos iniciales del almacén
+productos_almacen = {
+    "Estantería A": [
+        {"nombre": "Chocolate Amargo", "cantidad": 20, "precio": 2.5},
+        {"nombre": "Mermelada de Fresa", "cantidad": 15, "precio": 3.0}
+    ],
+    "Estantería B": [
+        {"nombre": "Aceitunas Verdes", "cantidad": 50, "precio": 1.5},
+        {"nombre": "Aceite de Oliva Extra", "cantidad": 10, "precio": 6.0}
+    ],
+    "Estantería C": [
+        {"nombre": "Café Molido", "cantidad": 25, "precio": 5.0},
+        {"nombre": "Té Verde", "cantidad": 40, "precio": 2.0}
+    ],
+    "Estantería D": [
+        {"nombre": "Pasta Integral", "cantidad": 30, "precio": 1.8},
+        {"nombre": "Arroz Basmati", "cantidad": 20, "precio": 1.7}
+    ]
+}
+
+def agregar_producto():
+    nombre_estanteria = input("Ingrese el nombre de la estantería donde agregar el producto: ")
+    nombre_producto = input("Ingrese el nombre del producto: ")
+    cantidad = int(input("Ingrese la cantidad del producto: "))
+    precio = float(input("Ingrese el precio por unidad del producto: "))
+    
+    if nombre_estanteria in productos_almacen:
+        # Verificar si el producto ya existe en la estantería
+        for producto in productos_almacen[nombre_estanteria]:
+            if producto["nombre"] == nombre_producto:
+                # Si el producto existe, actualizar la cantidad
+                producto["cantidad"] += cantidad
+                # Notificar al usuario si el precio es diferente
+                if producto["precio"] != precio:
+                    print(f"Nota: El precio ingresado ({precio}) difiere del precio actual ({producto['precio']}). Usando precio existente.")
+                print(f"Cantidad de '{nombre_producto}' actualizada en la {nombre_estanteria}. Nueva cantidad: {producto['cantidad']}")
+                return
+        # Si el producto no existe, agregarlo como nuevo
+        productos_almacen[nombre_estanteria].append({"nombre": nombre_producto, "cantidad": cantidad, "precio": precio})
+        print(f"Producto '{nombre_producto}' agregado correctamente a la {nombre_estanteria}.")
+    else:
+        print(f"Error: La estantería '{nombre_estanteria}' no existe en el almacén.")
+
+def retirar_producto():
+    nombre_producto = input("Ingrese el nombre del producto a retirar: ")
+    cantidad_retirar = int(input("Ingrese la cantidad a retirar: "))
+    
+    for estanteria, productos in productos_almacen.items():
+        for producto in productos:
+            if producto["nombre"] == nombre_producto:
+                if producto["cantidad"] >= cantidad_retirar:
+                    producto["cantidad"] -= cantidad_retirar
+                    print(f"Producto '{nombre_producto}' retirado correctamente. Cantidad restante: {producto['cantidad']}.")
+                    return
+                else:
+                    print(f"Error: No hay suficiente cantidad de '{nombre_producto}' para retirar.")
+                    return
+    print(f"Error: Producto '{nombre_producto}' no encontrado en el almacén.")
+
+def verificar_disponibilidad():
+    nombre_producto = input("Ingrese el nombre del producto a verificar: ")
+    
+    for estanteria, productos in productos_almacen.items():
+        for producto in productos:
+            if producto["nombre"] == nombre_producto:
+                print(f"Producto '{nombre_producto}' encontrado en {estanteria} con cantidad disponible: {producto['cantidad']}.")
+                return
+    print(f"Producto '{nombre_producto}' no encontrado en el almacén.")
+
+def verificar_estado_almacen():
+    print("Estado del almacén:")
+    for estanteria, productos in productos_almacen.items():
+        cantidad_total = sum(p["cantidad"] for p in productos)
+        valor_total = sum(p["cantidad"] * p["precio"] for p in productos)
+        print(f"{estanteria}: {cantidad_total} productos, valor total: {valor_total:.2f} euros")
+
+def transferir_producto():
+    nombre_producto = input("Ingrese el nombre del producto a transferir: ")
+    cantidad_transferir = int(input("Ingrese la cantidad a transferir: "))
+    estanteria_origen = input("Ingrese la estantería de origen: ")
+    estanteria_destino = input("Ingrese la estantería de destino: ")
+    
+    # Verificar si el producto existe en la estantería de origen y tiene suficiente cantidad
+    for producto in productos_almacen.get(estanteria_origen, []):
+        if producto["nombre"] == nombre_producto and producto["cantidad"] >= cantidad_transferir:
+            producto["cantidad"] -= cantidad_transferir  # Reducir la cantidad en la estantería de origen
+            
+            # Buscar si el producto ya existe en la estantería de destino
+            for prod_destino in productos_almacen.get(estanteria_destino, []):
+                if prod_destino["nombre"] == nombre_producto:
+                    # Si existe, aumentar la cantidad
+                    prod_destino["cantidad"] += cantidad_transferir
+                    print(f"Transferencia de {cantidad_transferir} unidades de '{nombre_producto}' de {estanteria_origen} a {estanteria_destino} completada.")
+                    return
+            
+            # Si no existe en la estantería destino, agregar como nuevo producto
+            productos_almacen[estanteria_destino].append({"nombre": nombre_producto, "cantidad": cantidad_transferir, "precio": producto["precio"]})
+            print(f"Producto '{nombre_producto}' transferido correctamente a una nueva ubicación en {estanteria_destino}.")
+            return
+    
+    print("Error: No se pudo completar la transferencia.")
+
+def optimizar_inventario():
+    estanteria_mayor_valor = None
+    estanteria_menor_productos = None
+    mayor_valor = 0
+    menor_cantidad = float('inf')
+    
+    for estanteria, productos in productos_almacen.items():
+        valor_estanteria = sum(p["cantidad"] * p["precio"] for p in productos)
+        cantidad_productos = sum(p["cantidad"] for p in productos)
+        
+        if valor_estanteria > mayor_valor:
+            mayor_valor = valor_estanteria
+            estanteria_mayor_valor = estanteria
+        
+        if cantidad_productos < menor_cantidad:
+            menor_cantidad = cantidad_productos
+            estanteria_menor_productos = estanteria
+    
+    print(f"La estantería con mayor valor acumulado es {estanteria_mayor_valor} con un valor de {mayor_valor:.2f} euros.")
+    print(f"La estantería con menos productos es {estanteria_menor_productos} con {menor_cantidad} productos.")
+
+# Menú interactivo para que el usuario elija la operación
+while True:
+    print("\nOpciones del almacén:")
+    print("1. Agregar producto")
+    print("2. Retirar producto")
+    print("3. Verificar disponibilidad de producto")
+    print("4. Verificar estado del almacén")
+    print("5. Transferir producto entre estanterías")
+    print("6. Optimizar inventario (mayor valor y menos productos)")
+    print("0. Salir")
+    
+    opcion = input("Seleccione una opción: ")
+    
+    if opcion == "1":
+        agregar_producto()
+    elif opcion == "2":
+        retirar_producto()
+    elif opcion == "3":
+        verificar_disponibilidad()
+    elif opcion == "4":
+        verificar_estado_almacen()
+    elif opcion == "5":
+        transferir_producto()
+    elif opcion == "6":
+        optimizar_inventario()
+    elif opcion == "0":
+        print("Saliendo del sistema de gestión de almacén.")
+        break
+    else:
+        print("Opción inválida. Intente nuevamente.")
